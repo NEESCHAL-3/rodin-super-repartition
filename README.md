@@ -325,6 +325,23 @@ So this repo is a development convenience, not something ordinary users should b
 
 ---
 
+## Recovery flashable packages
+
+For users who prefer the easy path, GitHub Releases provide:
+
+- `RODIN-Super-Expand-20G-vX.Y.zip`
+- `RODIN-Super-Restore-11G-vX.Y.zip`
+
+The recovery installer performs the same device, geometry and GPT CRC validation, partition relocation, byte-for-byte readback verification, and backup-GPT-first update automatically.
+
+After flashing either package, reboot directly back to recovery and **Format Data** before booting Android.
+
+The installer intentionally does not format `/data` itself because the recovery kernel must reboot first to reread the changed partition table.
+
+See [`docs/RECOVERY-ZIPS.md`](docs/RECOVERY-ZIPS.md) for the complete workflow and safety behavior.
+
+---
+
 # Returning to factory 11 GiB
 
 Full rollback documentation is here:

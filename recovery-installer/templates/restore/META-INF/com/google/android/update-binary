@@ -1,0 +1,114 @@
+#!/sbin/sh
+
+OUTFD="/proc/self/fd/$2"
+ZIPFILE="$3"
+TMP="/tmp/rodin-super-repartition"
+HELPER="$TMP/bin/rodin-gpt"
+
+ui_print() {
+  echo "ui_print $*" > "$OUTFD"
+  echo "ui_print" > "$OUTFD"
+}
+
+abort_install() {
+  ui_print ""
+  ui_print "ERROR: $*"
+  ui_print "Stay in recovery. Do not boot Android."
+  ui_print "Re-run the ZIP after fixing the reported issue."
+  exit 1
+}
+
+ui_print "========================================"
+ui_print " RODIN SUPER RESTORE v1.0"
+ui_print " 20 GiB  ->  11 GiB STOCK GEOMETRY"
+ui_print "========================================"
+ui_print ""
+ui_print "This operation destroys the current"
+ui_print "20 GiB super contents and userdata."
+ui_print ""
+
+command -v unzip >/dev/null 2>&1 || abort_install "recovery has no unzip command"
+rm -rf "$TMP"
+mkdir -p "$TMP" || abort_install "cannot create temporary directory"
+unzip -o "$ZIPFILE" 'bin/rodin-gpt' -d "$TMP" >/dev/null 2>&1 || abort_install "cannot extract helper"
+chmod 0755 "$HELPER" || abort_install "cannot chmod helper"
+
+DEVICES="$(getprop ro.product.device 2>/dev/null) $(getprop ro.product.vendor.device 2>/dev/null) $(getprop ro.build.product 2>/dev/null)"
+echo " $DEVICES " | grep -q ' rodin ' || abort_install "device is not rodin ($DEVICES)"
+[ -b /dev/block/sdc ] || abort_install "/dev/block/sdc missing"
+[ -e /dev/block/by-name/super ] || abort_install "super partition missing"
+[ -e /dev/block/by-name/userdata ] || abort_install "userdata partition missing"
+
+STATUS="$($HELPER status 2>/tmp/rodin-gpt-status.log)"
+case "$STATUS" in
+  stock)
+    ui_print "Device already uses the stock 11 GiB layout."
+    ui_print "Nothing was written."
+    exit 0
+    ;;
+  dev20g)
+    ui_print "Current layout       : development 20 GiB [OK]"
+    ;;
+  mixed)
+    ui_print "Current GPT copies   : recoverable mixed state"
+    ui_print "Installer will complete the stock transition."
+    ;;
+  *)
+    abort_install "GPT geometry/CRC is not a supported rodin layout"
+    ;;
+esac
+
+ui_print "Target super         : stock 11 GiB"
+ui_print "Userdata restored    : +9 GiB physical range"
+ui_print ""
+ui_print "Unmounting data and dynamic partitions..."
+
+for p in /data /system /system_root /system_ext /product /vendor /odm; do
+  if mount | grep -q " on $p "; then
+    umount "$p" >/dev/null 2>&1 || true
+  fi
+done
+
+if mount | grep -Eq ' on /(data|system|system_root|system_ext|product|vendor|odm) '; then
+  abort_install "data/dynamic partition is still mounted"
+fi
+
+ui_print "Mount state          : clear [OK]"
+ui_print ""
+ui_print "Restoring and verifying stock locations:"
+ui_print " ffu / mem / countrycode_a,b"
+ui_print " oops / charger / rescue / blackbox"
+ui_print ""
+ui_print "NOTE: current 20 GiB super is now disposable."
+
+if ! "$HELPER" stage-restore >/tmp/rodin-stage.log 2>&1; then
+  abort_install "stock partition staging/readback verification failed"
+fi
+ui_print "Stock locations      : verified [OK]"
+ui_print ""
+ui_print "Writing backup GPT first..."
+ui_print "Then primary GPT..."
+
+if ! "$HELPER" apply-restore >/tmp/rodin-apply.log 2>&1; then
+  abort_install "stock GPT write/readback verification failed"
+fi
+
+STATUS="$($HELPER status 2>/tmp/rodin-final.log)"
+[ "$STATUS" = "stock" ] || abort_install "final GPT verification did not report stock"
+
+sync
+ui_print ""
+ui_print "========================================"
+ui_print " SUCCESS - STOCK 11 GiB GPT RESTORED"
+ui_print "========================================"
+ui_print ""
+ui_print "IMPORTANT NEXT STEPS:"
+ui_print " 1. Reboot DIRECTLY back to recovery"
+ui_print " 2. Format Data (type yes)"
+ui_print " 3. Reboot recovery once more"
+ui_print " 4. Flash an 11 GiB-compatible super.img"
+ui_print ""
+ui_print "Expected physical super: 11811160064 bytes"
+ui_print "Do NOT boot Android before formatting data"
+ui_print "and flashing a valid stock-sized super image."
+exit 0

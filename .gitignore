@@ -4,3 +4,4 @@ out/
 SHA256SUMS.txt
 __pycache__/
 *.pyc
+dist/
