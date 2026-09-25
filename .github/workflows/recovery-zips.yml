@@ -28,7 +28,7 @@ jobs:
           readelf -h dist/rodin-gpt | grep -E 'Class:|Machine:|Type:'
           unzip -l dist/RODIN-Super-Expand-20G-v*.zip
           unzip -l dist/RODIN-Super-Restore-11G-v*.zip
-          sha256sum -c dist/SHA256SUMS.txt
+          (cd dist && sha256sum -c SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
           name: rodin-repartition-zips
