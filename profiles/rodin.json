@@ -1,0 +1,40 @@
+{
+  "device": "POCO X7 Pro / Redmi Turbo 4",
+  "codename": "rodin",
+  "storage_device": "/dev/block/sdc",
+  "sector_size": 4096,
+  "disk_bytes": 264484421632,
+  "disk_lbas": 64571392,
+  "gpt": {
+    "primary_header_lba": 1,
+    "primary_entries_lba": 2,
+    "backup_entries_lba": 64571384,
+    "backup_header_lba": 64571391,
+    "num_entries": 93,
+    "entry_size": 128,
+    "entry_array_sectors": 3
+  },
+  "stock": {
+    "super_bytes": 11811160064,
+    "userdata_bytes": 250170277888
+  },
+  "development": {
+    "super_bytes": 21474836480,
+    "userdata_bytes": 240506601472,
+    "shift_lbas": 2359296,
+    "shift_bytes": 9663676416
+  },
+  "partitions": {
+    "super": {"index":83,"stock":[524288,3407871],"development":[524288,5767167]},
+    "ffu": {"index":84,"stock":[3407872,3409919],"development":[5767168,5769215]},
+    "mem": {"index":85,"stock":[3409920,3410943],"development":[5769216,5770239]},
+    "countrycode_a": {"index":86,"stock":[3410944,3411199],"development":[5770240,5770495]},
+    "countrycode_b": {"index":87,"stock":[3411200,3411455],"development":[5770496,5770751]},
+    "oops": {"index":88,"stock":[3411456,3415551],"development":[5770752,5774847]},
+    "charger": {"index":89,"stock":[3415552,3415807],"development":[5774848,5775103]},
+    "rescue": {"index":90,"stock":[3415808,3448575],"development":[5775104,5807871]},
+    "blackbox": {"index":91,"stock":[3448576,3490559],"development":[5807872,5849855]},
+    "userdata": {"index":92,"stock":[3490560,64567287],"development":[5849856,64567287]},
+    "flashinfo": {"index":93,"stock":[64567288,64571383],"development":[64567288,64571383]}
+  }
+}

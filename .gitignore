@@ -1,0 +1,6 @@
+out/
+*.img
+*.bin
+SHA256SUMS.txt
+__pycache__/
+*.pyc

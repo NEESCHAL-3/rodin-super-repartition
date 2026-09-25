@@ -1,0 +1,13 @@
+name: validate
+on: [push, pull_request]
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python3 tests/test_layout.py
+      - run: python3 -m py_compile tools/make_gpt.py
+      - run: bash -n scripts/*.sh
